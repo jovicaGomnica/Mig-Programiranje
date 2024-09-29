@@ -1,2 +1,150 @@
-//ebi se
-testis testis 12
+#include<bits/stdc++.h>
+using namespace std;
+
+class GraphAdjList
+{
+    vector<vector<int>> capacity,start_capacity;
+    vector<vector<int>> adj;
+    int Num_Nodes;
+public:
+    GraphAdjList(int nodes) : Num_Nodes(nodes)
+    {
+        adj.resize(nodes);
+        capacity.resize(nodes, vector<int>(nodes, 0));
+        start_capacity.resize(nodes,vector<int>(nodes,0));
+    }
+
+    void addEdge(int from, int to, int cap)
+    {
+        adj[from].push_back(to);
+        adj[to].push_back(from);
+        capacity[from][to] = cap;
+        start_capacity[from][to] = cap;
+    }
+
+    int bfs(int source, int sink, vector<int>& parent)
+    {
+        fill(parent.begin(), parent.end(), -1);
+        parent[source] = source;
+        queue<pair<int, int>> q;
+        q.push({source, INT_MAX});
+
+        while (!q.empty())
+        {
+            int cur = q.front().first;
+            int flow = q.front().second;
+            q.pop();
+
+            for (int next : adj[cur])
+            {
+                if (parent[next] == -1 && capacity[cur][next] > 0)
+                {
+                    parent[next] = cur;
+                    int new_flow = min(flow, capacity[cur][next]);
+                    if (next == sink)
+                        return new_flow;
+                    q.push({next, new_flow});
+                }
+            }
+        }
+        return 0;
+    }
+
+    int solveEdmondKarp(int source, int sink)
+    {
+        capacity = start_capacity;
+        int total_flow = 0;
+        vector<int> parent(Num_Nodes);
+        int new_flow;
+
+        while ((new_flow = bfs(source, sink, parent)) != 0)
+        {
+            total_flow += new_flow;
+            int cur = sink;
+            while (cur != source)
+            {
+                int prev = parent[cur];
+                capacity[prev][cur] -= new_flow;
+                capacity[cur][prev] += new_flow;
+                cur = prev;
+            }
+        }
+        return total_flow;
+    }
+
+    bool dfs(int source, int sink, vector<int>& parent)
+    {
+        fill(parent.begin(), parent.end(), -1);
+        stack<int> s;
+        vector<bool> visited(Num_Nodes, false);
+        s.push(source);
+        visited[source] = true;
+
+        while (!s.empty())
+        {
+            int cur = s.top();
+            s.pop();
+
+            for (int next : adj[cur])
+            {
+                if (!visited[next] && capacity[cur][next] > 0)
+                {
+                    parent[next] = cur;
+                    if (next == sink)
+                    {
+                        return true;
+                    }
+                    s.push(next);
+                    visited[next] = true;
+                }
+            }
+        }
+        return false;
+    }
+
+    int solveFordFulkerson(int source, int sink)
+    {
+        capacity = start_capacity;
+        int total_flow = 0;
+        vector<int> parent(Num_Nodes);
+
+        while (dfs(source, sink, parent))
+        {
+            int flow = INT_MAX;
+            int cur = sink;
+
+            while (cur != source)
+            {
+                int prev = parent[cur];
+                flow = min(flow, capacity[prev][cur]);
+                cur = prev;
+            }
+
+            cur = sink;
+            while (cur != source)
+            {
+                int prev = parent[cur];
+                capacity[prev][cur] -= flow;
+                capacity[cur][prev] += flow;
+                cur = prev;
+            }
+
+            total_flow += flow;
+        }
+        return total_flow;
+    }
+};
+
+int main()
+{
+    GraphAdjList g(4);
+    g.addEdge(0, 1, 10);
+    g.addEdge(1, 2, 5);
+    g.addEdge(2, 3, 8);
+
+    cout << "Ford-Fulkerson: " << g.solveFordFulkerson(0, 3) << endl;
+    cout << "Edmonds-Karp: " << g.solveEdmondKarp(0, 3) << endl;
+
+
+    return 0;
+}
