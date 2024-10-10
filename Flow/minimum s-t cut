@@ -1,0 +1,128 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+class GraphAdjListMinCut
+{
+    vector<vector<int>> capacity, start_capacity;
+    vector<vector<int>> adj;
+    int Num_Nodes;
+public:
+    GraphAdjListMinCut(int nodes) : Num_Nodes(nodes)
+    {
+        adj.resize(nodes);
+        capacity.resize(nodes, vector<int>(nodes, 0));
+        start_capacity.resize(nodes, vector<int>(nodes, 0));
+    }
+
+    void addEdge(int from, int to, int cap)
+    {
+        adj[from].push_back(to);
+        adj[to].push_back(from);
+        capacity[from][to] = cap;
+        start_capacity[from][to] = cap;
+    }
+
+    bool bfs(int source, int sink, vector<int>& parent)
+    {
+        fill(parent.begin(), parent.end(), -1);
+        parent[source] = source;
+        queue<int> q;
+        q.push(source);
+
+        while (!q.empty())
+        {
+            int cur = q.front();
+            q.pop();
+
+            for (int next : adj[cur])
+            {
+                if (parent[next] == -1 && capacity[cur][next] > 0)
+                {
+                    parent[next] = cur;
+                    if (next == sink)
+                        return true;
+                    q.push(next);
+                }
+            }
+        }
+        return false;
+    }
+
+    int solveEdmondKarp(int source, int sink)
+    {
+        capacity = start_capacity;
+        int total_flow = 0;
+        vector<int> parent(Num_Nodes);
+        int new_flow;
+
+        while ((new_flow = bfs(source, sink, parent)) != 0)
+        {
+            total_flow += new_flow;
+            int cur = sink;
+            while (cur != source)
+            {
+                int prev = parent[cur];
+                capacity[prev][cur] -= new_flow;
+                capacity[cur][prev] += new_flow;
+                cur = prev;
+            }
+        }
+        return total_flow;
+    }
+
+    void minCut(int source)
+    {
+        vector<bool> visited(Num_Nodes, false);
+        queue<int> q;
+        q.push(source);
+        visited[source] = true;
+
+        while (!q.empty())
+        {
+            int cur = q.front();
+            q.pop();
+
+            for (int next : adj[cur])
+            {
+                if (!visited[next] && capacity[cur][next] > 0)
+                {
+                    visited[next] = true;
+                    q.push(next);
+                }
+            }
+        }
+
+        cout << "Min-cut edges:" << endl;
+        for (int u = 0; u < Num_Nodes; u++)
+        {
+            for (int v : adj[u])
+            {
+                if (visited[u] && !visited[v] && start_capacity[u][v] > 0)
+                {
+                    cout << u << " - " << v << endl;
+                }
+            }
+        }
+    }
+};
+
+int main()
+{
+    GraphAdjListMinCut g(6);
+    g.addEdge(0, 1, 16);
+    g.addEdge(0, 2, 13);
+    g.addEdge(1, 2, 10);
+    g.addEdge(1, 3, 12);
+    g.addEdge(2, 1, 4);
+    g.addEdge(2, 4, 14);
+    g.addEdge(3, 2, 9);
+    g.addEdge(3, 5, 20);
+    g.addEdge(4, 3, 7);
+    g.addEdge(4, 5, 4);
+
+    cout << "Max-flow: " << g.solveEdmondKarp(0, 5) << endl;
+
+    g.minCut(0);
+
+    return 0;
+}
