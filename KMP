@@ -1,0 +1,166 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class String {
+    char* chars;
+    int length;
+
+public:
+    String(char* str="")
+    {
+        length = strlen(str);
+        chars = new char[length + 1];
+        strcpy(chars, str);
+    }
+
+    String(const String& s)
+    {
+        length = s.length;
+        chars = new char[length + 1];
+        strcpy(chars, s.chars);
+    }
+
+    ~String() {
+        delete[] chars;
+    }
+
+    // Assignment Operator
+    String& operator=(const String& other)
+    {
+        if (this != &other)
+        {
+            delete[] chars;
+            length = other.length;
+            chars = new char[length + 1];
+            strcpy(chars, other.chars);
+        }
+        return *this;
+    }
+
+    int* buildKMPTable(char* pattern)
+    {
+        int patternLength = strlen(pattern);
+        int* kmpTable = new int[patternLength];
+        kmpTable[0] = 0;
+        int j = 0;  /// dolzina na prethoden najdolg prefix sufix
+
+        for (int i=1;i<patternLength;i++)
+        {
+            while (j>0 && pattern[i]!=pattern[j])
+                j = kmpTable[j-1];
+
+            if (pattern[i] == pattern[j]) j++;
+
+            kmpTable[i] = j;
+        }
+        return kmpTable;
+    }
+
+    int* findAllSubStr(const String& subStr) {
+        int* results = new int[length];
+        int resultCount = 0;
+
+        int* kmpTable = buildKMPTable(subStr.chars);
+        int j = 0;
+
+        for (int i=0;i<length;i++) {
+            while (j>0 && chars[i]!=subStr.chars[j]) {
+                j = kmpTable[j-1];
+            }
+            if (chars[i] == subStr.chars[j]) {
+                j++;
+            }
+            if (j==subStr.length) {
+                results[resultCount++] = i-j+1;
+                j = kmpTable[j-1];
+            }
+        }
+        delete[] kmpTable;
+        results[resultCount] = -1;
+        return results;
+    }
+
+    int findFirstSubStr(const String& subStr) {
+        int* kmpTable = buildKMPTable(subStr.chars);
+        int j = 0;
+
+        for (int i=0;i<length;i++)
+        {
+            while (j>0 && chars[i] != subStr.chars[j]) {
+                j = kmpTable[j-1];
+            }
+            if (chars[i] == subStr.chars[j]) {
+                j++;
+            }
+            if (j == subStr.length)
+            {
+                delete[] kmpTable;
+                return i-j +1;
+            }
+        }
+        delete[] kmpTable;
+        return -1;
+    }
+
+    int* buildKMPTableReverse(const char* pattern, int patternLength) {
+        int* kmpTable = new int[patternLength];
+        kmpTable[patternLength-1] = 0;
+        int j=0;
+
+        for (int i=patternLength-2;i>=0;i--) {
+            while (j>0 && pattern[i] != pattern[patternLength-j-1]) {
+                j = kmpTable[patternLength - j];
+            }
+            if (pattern[i] == pattern[patternLength-j-1]) {
+                j++;
+            }
+            kmpTable[i] = j;
+        }
+        return kmpTable;
+    }
+
+    int findLastSubStr(String& subStr) {
+        int* kmpTable = buildKMPTableReverse(subStr.chars, subStr.length);
+        int j = 0;
+
+        for (int i=length-1;i>=0;i--) {
+            while (j>0 && chars[i] != subStr.chars[subStr.length-j-1])
+            {
+                j = kmpTable[subStr.length-j];
+            }
+            if (chars[i] == subStr.chars[subStr.length-j-1]) {
+                j++;
+            }
+            if (j == subStr.length)
+            {
+                delete[] kmpTable;
+                return i;
+            }
+        }
+        delete[] kmpTable;
+        return -1;
+    }
+};
+
+int main()
+{
+    String mainStr("abracadabra");
+    String subStr("abra");
+
+    int* allMatches = mainStr.findAllSubStr(subStr);
+    cout<<"Site pojavuvanja na 'abra' vo 'abracadabra': ";
+    for (int i=0;allMatches[i] != -1;i++)
+    {
+        cout<<allMatches[i]<<" ";
+    }
+    delete[] allMatches;
+    cout<<endl;
+
+    int firstMatch = mainStr.findFirstSubStr(subStr);
+    cout<<"Prvo pojavuvanje na 'abra' vo 'abracadabra': "<< firstMatch<<endl;
+
+    int lastMatch = mainStr.findLastSubStr(subStr);
+    cout<<"Posledno pojavuvanje 'abra' vo 'abracadabra': "<<lastMatch<<endl;
+
+    return 0;
+}
