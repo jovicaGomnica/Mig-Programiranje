@@ -1,0 +1,81 @@
+#include <bits/stdc++.h>
+using namespace std;
+const double PI =  acos(-1.0);
+
+
+struct Point{
+    double x=0.0,y=0.0,z=0.0;
+
+    Point(double x=0.0,double y=0.0,double z=0.0)
+    {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
+    Point translation(const Point v)
+    {
+        Point p;
+        p.x = v.x + x;
+        p.y = v.y + y;
+        p.z = v.z + z;
+
+        return p;
+    }
+    Point translation(const double a,const double b,const double c)
+    {
+        Point v(a,b,c);
+        Point p;
+        p.x = v.x + x;
+        p.y = v.y + y;
+        p.z = v.z + z;
+
+        return p;
+    }
+
+    Point scale(const double k)
+    {
+        Point p;
+        p.x = k*x;p.y = y*k; p.z = z*k;
+        return p;
+    }
+    /// Okolu x
+    Point rotate_x(double d)
+    {
+        double rad  = (d * PI) / 180.0;
+        Point p;
+        p.x = x;
+        p.y = y * cos(rad) - z*sin(rad);
+        p.z = y * sin(rad) - z*cos(rad);
+        return p;
+    }
+    Point rotate_y(double d)
+    {
+        double rad  = (d * PI) / 180.0;
+        Point p;
+        p.x = x*cos(rad) + z*sin(rad);
+        p.y = y;
+        p.z = -x*sin(rad) + z*cos(rad);
+        return p;
+    }
+    Point rotate_z(double d)
+    {
+        double rad  = (d * PI) / 180.0;
+        Point p;
+        p.x = x*cos(rad) - y*sin(rad);
+        p.y = x*sin(rad) + y*cos(rad);
+        p.z = z;
+        return p;
+    }
+    friend ostream& operator<<(ostream &o,const Point p)
+    {
+        o<<p.x<<" "<<p.y<<" "<<p.z;
+    }
+};
+
+int main()
+{
+    Point A(1.0,2.0,1.0);
+    cout<<A.translation(-1.0,-2.0,-1.0)<<endl<<A.scale(2.5)<<endl<<A.rotate_x(90)<<endl<<A.rotate_y(90)<<endl<<A.rotate_z(90)<<endl;
+
+    return 0;
+}
