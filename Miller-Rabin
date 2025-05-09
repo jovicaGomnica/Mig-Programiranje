@@ -1,0 +1,61 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+ll stepen[100];
+
+bool prost(ll const n)
+{
+    if (n == 3) return true;
+    if (n%2 == 0) return false;
+
+    ll k = 0;
+    ll kn = n - 1;
+    while (kn%2 == 0)
+    {
+        kn /= 2;
+        k++;
+    }
+
+    for (int i=0;i<k*2;i++)
+    {
+        ll a = rand()%n;
+        while (a<=1 || a == n-1) a = rand()%n;
+        //cout<<"sega a = "<<a<<endl;
+
+        stepen[0] = a % n;
+        for (ll i=1LL;i<=k;i++)
+            stepen[i] = (stepen[i-1] * stepen[i-1]) % n;
+
+        ll x = 1;
+        for (ll i = 0LL;i<=k;i++)
+        {
+            if (kn & (1LL << i))
+                x = (x * stepen[i]) % n;
+        }
+
+        if (x == 1 || x == n - 1) continue;
+        bool sloz = true;
+        for (ll i = 1;i < k;i++)
+        {
+            x = (x * x) % n;
+            if (x == n - 1) {
+                sloz = false;
+                break;
+            }
+        }
+        if (sloz) return false;
+    }
+    return true;
+}
+
+int main()
+{
+    int n;
+    cin>>n;
+    if (prost(n)) cout<<"Prost\n";
+    else cout<<"Slozen\n";
+
+    for (ll i = 2; i <= 100; i++) if (prost(i)) cout<<i<< " ";
+
+    return 0;
+}
